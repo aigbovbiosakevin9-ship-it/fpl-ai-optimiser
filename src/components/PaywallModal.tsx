@@ -1,40 +1,12 @@
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { Crown, Check, Loader2, X, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { Crown, Check, X, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function PaywallModal({ onClose }: Props) {
-  const { user, refreshProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubscribe() {
-    setLoading(true);
-    setError(null);
-    try {
-      // Simulate subscription activation (no Stripe configured yet)
-      // In production this would redirect to Stripe Checkout
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          is_premium: true,
-          premium_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        })
-        .eq('id', user?.id);
-
-      if (updateError) throw updateError;
-
-      await refreshProfile();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
+  function handleSubscribe() {
+    window.open('https://buy.stripe.com/test_00waEZgxCert58tdCP1gs00', '_blank');
   }
 
   const features = [
@@ -80,11 +52,6 @@ export default function PaywallModal({ onClose }: Props) {
 
         {/* Price + CTA */}
         <div className="p-8 pt-0">
-          {error && (
-            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
-              {error}
-            </div>
-          )}
           <div className="flex items-baseline justify-center gap-1 mb-1">
             <span className="text-4xl font-bold text-white">£15</span>
             <span className="text-slate-400">/month</span>
@@ -93,17 +60,10 @@ export default function PaywallModal({ onClose }: Props) {
 
           <button
             onClick={handleSubscribe}
-            disabled={loading}
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Crown className="w-5 h-5" />
-                Upgrade to Pro
-              </>
-            )}
+            <Crown className="w-5 h-5" />
+            Upgrade to Pro
           </button>
           <p className="text-center text-xs text-slate-600 mt-4">
             You'll be charged £15/month. Manage your subscription anytime.
