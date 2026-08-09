@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Mail, Lock, Loader2 } from 'lucide-react';
+import { Trophy, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 
-export default function AuthScreen() {
+interface Props {
+  onBack?: () => void;
+}
+
+export default function AuthScreen({ onBack }: Props) {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [email, setEmail] = useState('');
@@ -23,6 +27,15 @@ export default function AuthScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 px-4">
       <div className="w-full max-w-md">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
+          </button>
+        )}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 mb-4 shadow-lg shadow-emerald-500/30">
             <Trophy className="w-8 h-8 text-white" />

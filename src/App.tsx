@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/AuthScreen';
 import Dashboard from '@/components/Dashboard';
+import LandingPage from '@/components/LandingPage';
 import { Loader2 } from 'lucide-react';
 
 function App() {
   const { user, loading } = useAuth();
+  const [showApp, setShowApp] = useState(false);
 
   if (loading) {
     return (
@@ -14,7 +17,11 @@ function App() {
     );
   }
 
-  return user ? <Dashboard /> : <AuthScreen />;
+  if (user) return <Dashboard />;
+
+  if (showApp) return <AuthScreen onBack={() => setShowApp(false)} />;
+
+  return <LandingPage onEnterApp={() => setShowApp(true)} />;
 }
 
 export default App;

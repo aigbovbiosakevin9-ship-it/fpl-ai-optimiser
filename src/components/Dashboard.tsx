@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { fetchLivePlayers } from '@/lib/fplData';
 import type { Player } from '@/types';
 import TeamBuilder from '@/components/TeamBuilder';
 import AIResultsDisplay from '@/components/AIResultsDisplay';
 import PaywallModal from '@/components/PaywallModal';
-import { Trophy, Sparkles, Crown, LogOut, Loader2, Users, TrendingUp, AlertCircle } from 'lucide-react';
+import { Trophy, Sparkles, Crown, LogOut, Loader2, Users, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 
 type View = 'team' | 'results';
 
@@ -21,6 +22,8 @@ export default function Dashboard() {
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   const isPremium = profile?.is_premium ?? false;
 
@@ -28,27 +31,89 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [{ data: players }, { data: team }] = await Promise.all([
-        supabase.from('players').select('*').order('total_points', { ascending: false }),
-        supabase
-          .from('user_teams')
-          .select('*')
-          .eq('user_id', user?.id)
-          .maybeSingle(),
-      ]);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
 
-      if (players) setAllPlayers(players as Player[]);
-      if (team) {
-        setTeamId(team.id);
-        const { data: tp } = await supabase
-          .from('team_players')
-          .select('player_id')
-          .eq('team_id', team.id);
-        if (tp) setSelectedIds(tp.map((t: { player_id: string }) => t.player_id));
+        const [{ players, synced }, { data: team }] = await Promise.all([
+          fetchLivePlayers(accessToken ?? ''),
+          supabase
+            .from('user_teams')
+            .select('*')
+            .eq('user_id', user?.id)
+            .maybeSingle(),
+        ]);
+
+        if (players.length > 0) {
+          setAllPlayers(players);
+          if (synced) {
+            setSyncStatus('Live data synced from FPL');
+            setTimeout(() => setSyncStatus(null), 5000);
+          }
+        } else {
+          setSyncStatus('Using cached player data');
+          setTimeout(() => setSyncStatus(null), 5000);
+        }
+
+        if (team) {
+          setTeamId(team.id);
+          const { data: tp } = await supabase
+            .from('team_players')
+            .select('player_id')
+            .eq('team_id', team.id);
+          if (tp) setSelectedIds(tp.map((t: { player_id: string }) => t.player_id));
+        }
+      } catch {
+        const { data: players } = await supabase
+          .from('players')
+          .select('*')
+          .order('total_points', { ascending: false });
+        if (players) setAllPlayers(players as Player[]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [user?.id]);
+
+  const handleManualSync = useCallback(async () => {
+    setSyncing(true);
+    setSyncStatus(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-fpl-data`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+        },
+      );
+
+      if (!response.ok) throw new Error('Sync failed');
+      const data = await response.json();
+
+      if (data.synced) {
+        setSyncStatus(`Synced ${data.players_count} players from FPL`);
+        const { data: players } = await supabase
+          .from('players')
+          .select('*')
+          .order('total_points', { ascending: false });
+        if (players) setAllPlayers(players as Player[]);
+      } else {
+        setSyncStatus(data.reason || 'Already up to date');
+      }
+    } catch {
+      setSyncStatus('Sync failed — using cached data');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncStatus(null), 5000);
+    }
+  }, []);
 
   const handleToggle = useCallback((playerId: string) => {
     setSelectedIds((prev) =>
@@ -166,8 +231,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <p className="text-slate-400 text-sm">Loading live player data...</p>
       </div>
     );
   }
@@ -270,10 +336,32 @@ export default function Dashboard() {
         {view === 'team' ? (
           <>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white">Build Your Squad</h2>
-              <p className="text-slate-400 mt-1">
-                Select 15 players within a £100m budget, then run the AI optimiser.
-              </p>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Build Your Squad</h2>
+                  <p className="text-slate-400 mt-1">
+                    Select 15 players within a £100m budget, then run the AI optimiser.
+                  </p>
+                </div>
+                <button
+                  onClick={handleManualSync}
+                  disabled={syncing}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 text-sm font-medium rounded-xl transition-all border border-slate-700/50 disabled:opacity-50"
+                >
+                  {syncing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {syncing ? 'Syncing...' : 'Sync FPL Data'}
+                </button>
+              </div>
+              {syncStatus && (
+                <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5">
+                  <RefreshCw className="w-3 h-3" />
+                  {syncStatus}
+                </p>
+              )}
             </div>
             <TeamBuilder
               allPlayers={allPlayers}
