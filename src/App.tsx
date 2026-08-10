@@ -1,13 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/AuthScreen';
 import Dashboard from '@/components/Dashboard';
 import LandingPage from '@/components/LandingPage';
+import PrivacyPolicy from '@/components/PrivacyPolicy';
+import TermsOfService from '@/components/TermsOfService';
 import { Loader2 } from 'lucide-react';
+
+type Page = 'landing' | 'auth' | 'privacy' | 'terms';
 
 function App() {
   const { user, loading } = useAuth();
-  const [showApp, setShowApp] = useState(false);
+  const [page, setPage] = useState<Page>('landing');
+
+  useEffect(() => {
+    const handleNavigate = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === 'privacy' || detail === 'terms') {
+        setPage(detail);
+      } else if (detail === 'landing') {
+        setPage('landing');
+      }
+    };
+    window.addEventListener('navigate', handleNavigate);
+    return () => window.removeEventListener('navigate', handleNavigate);
+  }, []);
 
   if (loading) {
     return (
@@ -19,9 +36,11 @@ function App() {
 
   if (user) return <Dashboard />;
 
-  if (showApp) return <AuthScreen onBack={() => setShowApp(false)} />;
+  if (page === 'privacy') return <PrivacyPolicy onBack={() => setPage('landing')} />;
+  if (page === 'terms') return <TermsOfService onBack={() => setPage('landing')} />;
+  if (page === 'auth') return <AuthScreen onBack={() => setPage('landing')} />;
 
-  return <LandingPage onEnterApp={() => setShowApp(true)} />;
+  return <LandingPage onEnterApp={() => setPage('auth')} />;
 }
 
 export default App;

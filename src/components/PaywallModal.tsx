@@ -1,13 +1,16 @@
-import { Crown, Check, X, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { Crown, Check, X, Sparkles, TrendingUp, ArrowRight, Gift } from 'lucide-react';
+
+const STRIPE_PRO_LINK = 'https://buy.stripe.com/8x27sMbYh7jHfcmcTxdQQ00';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function PaywallModal({ onClose }: Props) {
-  function handleSubscribe() {
-    window.open('https://buy.stripe.com/test_00waEZgxCert58tdCP1gs00', '_blank');
-  }
+  const { user } = useAuth();
+  void user;
 
   const features = [
     { icon: Crown, title: 'Full Captain Picks', desc: 'Top 3 captain & vice-captain picks with AI reasoning' },
@@ -52,21 +55,29 @@ export default function PaywallModal({ onClose }: Props) {
 
         {/* Price + CTA */}
         <div className="p-8 pt-0">
-          <div className="flex items-baseline justify-center gap-1 mb-1">
-            <span className="text-4xl font-bold text-white">£15</span>
-            <span className="text-slate-400">/month</span>
+          {/* Free trial badge */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+              <Gift className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-300 text-sm font-medium">7 days free then £15/month</span>
+            </div>
           </div>
-          <p className="text-center text-xs text-slate-500 mb-5">Cancel anytime</p>
 
-          <button
-            onClick={handleSubscribe}
+          <p className="text-center text-sm text-slate-400 mb-5">
+            Try Pro free for 7 days — cancel anytime
+          </p>
+
+          <a
+            href={STRIPE_PRO_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2"
           >
             <Crown className="w-5 h-5" />
-            Upgrade to Pro
-          </button>
+            Start 7-Day Free Trial
+          </a>
           <p className="text-center text-xs text-slate-600 mt-4">
-            You'll be charged £15/month. Manage your subscription anytime.
+            You'll be charged £15/month after your 7-day trial ends. Cancel anytime.
           </p>
         </div>
       </div>

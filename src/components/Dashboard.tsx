@@ -1,17 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { fetchLivePlayers } from '@/lib/fplData';
+import { fetchLivePlayers, manualSync } from '@/lib/fplData';
 import type { Player } from '@/types';
 import TeamBuilder from '@/components/TeamBuilder';
 import AIResultsDisplay from '@/components/AIResultsDisplay';
 import PaywallModal from '@/components/PaywallModal';
+import ReferralPanel from '@/components/ReferralPanel';
 import { Trophy, Sparkles, Crown, LogOut, Loader2, Users, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 
-type View = 'team' | 'results';
+type View = 'team' | 'results' | 'profile';
 
 export default function Dashboard() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const [view, setView] = useState<View>('team');
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -32,11 +33,8 @@ export default function Dashboard() {
     (async () => {
       setLoading(true);
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-
         const [{ players, synced }, { data: team }] = await Promise.all([
-          fetchLivePlayers(accessToken ?? ''),
+          fetchLivePlayers(),
           supabase
             .from('user_teams')
             .select('*')
@@ -79,36 +77,15 @@ export default function Dashboard() {
     setSyncing(true);
     setSyncStatus(null);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-fpl-data`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-        },
-      );
-
-      if (!response.ok) throw new Error('Sync failed');
-      const data = await response.json();
-
-      if (data.synced) {
-        setSyncStatus(`Synced ${data.players_count} players from FPL`);
+      const result = await manualSync();
+      setSyncStatus(result.message);
+      if (result.synced) {
         const { data: players } = await supabase
           .from('players')
           .select('*')
           .order('total_points', { ascending: false });
         if (players) setAllPlayers(players as Player[]);
-      } else {
-        setSyncStatus(data.reason || 'Already up to date');
       }
-    } catch {
-      setSyncStatus('Sync failed — using cached data');
     } finally {
       setSyncing(false);
       setTimeout(() => setSyncStatus(null), 5000);
@@ -139,11 +116,9 @@ export default function Dashboard() {
         currentTeamId = newTeam.id;
         setTeamId(newTeam.id);
       } else {
-        // Clear existing team_players
         await supabase.from('team_players').delete().eq('team_id', currentTeamId);
       }
 
-      // Insert new team_players
       if (selectedIds.length > 0 && currentTeamId) {
         const rows = selectedIds.map((player_id, idx) => ({
           team_id: currentTeamId,
@@ -195,7 +170,7 @@ export default function Dashboard() {
             Authorization: `Bearer ${accessToken}`,
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
-          body: JSON.stringify({ squad: squadPayload }),
+          body: JSON.stringify({ squad: squadPayload, isPro: isPremium }),
         },
       );
 
@@ -217,7 +192,7 @@ export default function Dashboard() {
     } finally {
       setOptimizing(false);
     }
-  }, [selectedIds, allPlayers]);
+  }, [selectedIds, allPlayers, isPremium]);
 
   const squadPlayers = useMemo(
     () => allPlayers.filter((p) => selectedIds.includes(p.id)),
@@ -286,6 +261,17 @@ export default function Dashboard() {
                 <TrendingUp className="w-4 h-4" />
                 AI Results
               </button>
+              <button
+                onClick={() => setView('profile')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  view === 'profile'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Crown className="w-4 h-4" />
+                Profile
+              </button>
             </div>
 
             {!isPremium && (
@@ -330,6 +316,14 @@ export default function Dashboard() {
             }`}
           >
             AI Results
+          </button>
+          <button
+            onClick={() => setView('profile')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+              view === 'profile' ? 'bg-emerald-500 text-white' : 'text-slate-400'
+            }`}
+          >
+            Profile
           </button>
         </div>
 
@@ -392,7 +386,7 @@ export default function Dashboard() {
               </div>
             )}
           </>
-        ) : (
+        ) : view === 'results' ? (
           <>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -467,6 +461,13 @@ export default function Dashboard() {
               </div>
             )}
           </>
+        ) : (
+          <ReferralPanel
+            userId={user?.id ?? ''}
+            isPremium={isPremium}
+            onUpgrade={() => setShowPaywall(true)}
+            onProfileUpdate={refreshProfile}
+          />
         )}
       </main>
 

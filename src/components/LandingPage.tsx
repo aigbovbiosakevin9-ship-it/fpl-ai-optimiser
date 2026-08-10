@@ -18,10 +18,10 @@ import {
   Shield,
   Sparkles,
   Lock,
-  Mail,
+  Gift,
 } from 'lucide-react';
 
-const STRIPE_PRO_LINK = 'https://buy.stripe.com/test_00waEZgxCert58tdCP1gs00';
+const STRIPE_PRO_LINK = 'https://buy.stripe.com/8x27sMbYh7jHfcmcTxdQQ00';
 
 const scrollToId = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -486,9 +486,12 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               rel="noopener noreferrer"
               className="relative z-10 w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 text-center flex items-center justify-center gap-2"
             >
-              <Crown className="w-5 h-5" />
-              Upgrade to Pro — £15/month
+              <Gift className="w-5 h-5" />
+              Start 7-Day Free Trial
             </a>
+            <p className="relative z-10 text-center text-xs text-slate-500 mt-3">
+              Then £15/month. Cancel anytime.
+            </p>
           </div>
         </div>
       </SectionWrapper>
@@ -577,27 +580,24 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
             {/* Right */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
-                Legal & Contact
+                Legal
               </h4>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="#" className="text-slate-400 hover:text-emerald-400 text-sm transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-slate-400 hover:text-emerald-400 text-sm transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="mailto:hello@fpl-ai-optimiser.co.uk"
-                    className="text-slate-400 hover:text-emerald-400 text-sm transition-colors inline-flex items-center gap-1.5"
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'privacy' }))}
+                    className="text-slate-400 hover:text-emerald-400 text-sm transition-colors"
                   >
-                    <Mail className="w-3.5 h-3.5" />
-                    hello@fpl-ai-optimiser.co.uk
-                  </a>
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'terms' }))}
+                    className="text-slate-400 hover:text-emerald-400 text-sm transition-colors"
+                  >
+                    Terms of Service
+                  </button>
                 </li>
               </ul>
             </div>
