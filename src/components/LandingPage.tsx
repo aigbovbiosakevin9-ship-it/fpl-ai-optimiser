@@ -244,13 +244,10 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
         id="hero"
         className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden"
       >
-        {/* Background gradients */}
         <div className="absolute inset-0 bg-slate-950" />
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/40 via-slate-950 to-slate-950" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] opacity-60" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[100px]" />
-
-        {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -261,7 +258,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
         />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center py-20">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-8 animate-[fadeIn_0.6s_ease-out]">
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <span className="text-emerald-300 text-xs sm:text-sm font-medium">
@@ -269,19 +265,16 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
             </span>
           </div>
 
-          {/* Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
             The #1 AI Analyst
             <br />
             To <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">Dominate</span> Your FPL League
           </h1>
 
-          {/* Subheadline */}
           <p className="text-slate-400 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
             Our AI analyses your squad, picks your captain and finds hidden gems — so you climb the ranks every single gameweek
           </p>
 
-          {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <button
               onClick={onEnterApp}
@@ -298,7 +291,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
             </button>
           </div>
 
-          {/* Stars + trust */}
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
@@ -313,7 +305,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <ChevronDown className="w-6 h-6 text-slate-600" />
         </div>
@@ -343,15 +334,10 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
             };
             const c = colorClasses[step.color];
             return (
-              <div
-                key={idx}
-                className="relative group"
-              >
-                {/* Connector line */}
+              <div key={idx} className="relative group">
                 {idx < steps.length - 1 && (
                   <div className="hidden md:block absolute top-12 left-[60%] w-full h-[2px] bg-gradient-to-r from-slate-700 to-transparent z-0" />
                 )}
-
                 <div className={`relative z-10 bg-slate-900/60 backdrop-blur border ${c.border} rounded-2xl p-8 text-center transition-all duration-300 group-hover:scale-[1.03] group-hover:-translate-y-1`}>
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-800 mb-5">
                     <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center`}>
@@ -493,7 +479,7 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               className="relative z-10 w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 text-center flex items-center justify-center gap-2"
             >
               <Gift className="w-5 h-5" />
-              Try Pro Free for 7 Days — then £15/month
+              Start 7 Days Free Trial
             </a>
             <p className="relative z-10 text-center text-xs text-slate-500 mt-3">
               No charge for 7 days — cancel anytime
@@ -553,7 +539,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
       <footer id="login" className="border-t border-slate-800 px-4 sm:px-6 py-14">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-10 mb-10">
-            {/* Left */}
             <div>
               <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'landing' }))}><Logo /></button>
               <p className="text-slate-400 text-sm mt-4 mb-2">
@@ -564,7 +549,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               </p>
             </div>
 
-            {/* Middle */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
                 Navigation
@@ -583,7 +567,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               </ul>
             </div>
 
-            {/* Right */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
                 Legal
@@ -617,7 +600,6 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
             </div>
           </div>
 
-          {/* Bottom bar */}
           <div className="border-t border-slate-800 pt-8 space-y-3">
             <p className="text-slate-500 text-xs text-center">
               © 2026 FPL AI Optimiser. All rights reserved.
