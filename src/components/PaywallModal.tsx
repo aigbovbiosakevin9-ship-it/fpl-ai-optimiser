@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Crown, Check, X, Sparkles, TrendingUp, ArrowRight, Gift } from 'lucide-react';
 
@@ -34,38 +33,28 @@ export default function PaywallModal({ onClose }: Props) {
             <Crown className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-white">FPL AI Pro</h2>
-          <p className="text-slate-400 mt-1">Unlock the full power of AI optimisation</p>
+          <div className="mt-5"><span className="text-5xl font-extrabold text-white">£15</span><span className="text-slate-400 text-base">/month</span></div>
+          <p className="text-emerald-300 font-semibold mt-2">7 days free</p>
         </div>
 
         {/* Features */}
         <div className="p-8 space-y-4">
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                <f.icon className="w-5 h-5 text-emerald-400" />
+              <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <Check className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
                 <p className="text-white font-medium">{f.title}</p>
                 <p className="text-sm text-slate-400">{f.desc}</p>
               </div>
-              <Check className="w-5 h-5 text-emerald-400 ml-auto flex-shrink-0 mt-2" />
             </div>
           ))}
         </div>
 
         {/* Price + CTA */}
         <div className="p-8 pt-0">
-          {/* Free trial badge */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-              <Gift className="w-4 h-4 text-emerald-400" />
-              <span className="text-emerald-300 text-sm font-medium">7 days free then £15/month</span>
-            </div>
-          </div>
-
-          <p className="text-center text-sm text-slate-400 mb-5">
-            Try Pro free for 7 days — cancel anytime
-          </p>
+          <p className="text-center text-sm text-slate-400 mb-5">No charge for 7 days — cancel anytime</p>
 
           <a
             href={STRIPE_PRO_LINK}
@@ -76,9 +65,7 @@ export default function PaywallModal({ onClose }: Props) {
             <Crown className="w-5 h-5" />
             Start 7-Day Free Trial
           </a>
-          <p className="text-center text-xs text-slate-600 mt-4">
-            You'll be charged £15/month after your 7-day trial ends. Cancel anytime.
-          </p>
+          <p className="text-center text-xs text-slate-500 mt-3">Then £15/month. Cancel anytime.</p>
         </div>
       </div>
     </div>

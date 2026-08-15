@@ -5,19 +5,24 @@ import Dashboard from '@/components/Dashboard';
 import LandingPage from '@/components/LandingPage';
 import PrivacyPolicy from '@/components/PrivacyPolicy';
 import TermsOfService from '@/components/TermsOfService';
+import Blog from '@/components/Blog';
 import { Loader2 } from 'lucide-react';
 
-type Page = 'landing' | 'auth' | 'privacy' | 'terms';
+type Page = 'landing' | 'auth' | 'privacy' | 'terms' | 'blog';
 
 function App() {
   const { user, loading } = useAuth();
   const [page, setPage] = useState<Page>('landing');
+  const [blogSlug, setBlogSlug] = useState<string | undefined>();
 
   useEffect(() => {
     const handleNavigate = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
       if (detail === 'privacy' || detail === 'terms') {
         setPage(detail);
+      } else if (detail === 'blog' || detail.startsWith('blog:')) {
+        setBlogSlug(detail.startsWith('blog:') ? detail.slice(5) : undefined);
+        setPage('blog');
       } else if (detail === 'landing') {
         setPage('landing');
       }
@@ -39,6 +44,7 @@ function App() {
   if (page === 'privacy') return <PrivacyPolicy onBack={() => setPage('landing')} />;
   if (page === 'terms') return <TermsOfService onBack={() => setPage('landing')} />;
   if (page === 'auth') return <AuthScreen onBack={() => setPage('landing')} />;
+  if (page === 'blog') return <Blog slug={blogSlug} onBack={() => setPage('landing')} />;
 
   return <LandingPage onEnterApp={() => setPage('auth')} />;
 }

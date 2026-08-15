@@ -109,8 +109,9 @@ export default function AIResultsDisplay({ response, isPremium, onUpgrade }: Pro
                   onClick={onUpgrade}
                   className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/30"
                 >
-                  Upgrade to Pro — £15/mo
+                  Try Pro Free for 7 Days — then £15/month
                 </button>
+                <p className="text-xs text-slate-500 mt-2">No charge for 7 days — cancel anytime</p>
               </div>
             )}
 
@@ -143,8 +144,9 @@ export default function AIResultsDisplay({ response, isPremium, onUpgrade }: Pro
             onClick={onUpgrade}
             className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/30"
           >
-            Upgrade to Pro — £15/month
+            Try Pro Free for 7 Days — then £15/month
           </button>
+          <p className="text-xs text-slate-500 mt-2">No charge for 7 days — cancel anytime</p>
         </div>
       )}
     </div>

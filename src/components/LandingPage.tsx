@@ -1,7 +1,7 @@
 import { useState, useEffect, type ComponentType } from 'react';
 import {
   Trophy,
-  Users,
+  Upload,
   Brain,
   Rocket,
   Star,
@@ -64,21 +64,21 @@ const faqs = [
 
 const steps = [
   {
-    icon: Users,
-    title: 'Build Your Squad',
-    desc: 'Select your 15 players.',
+    icon: Upload,
+    title: 'Take a Screenshot',
+    desc: 'Go to the official FPL website or app and take a screenshot of your team.',
     color: 'emerald',
   },
   {
     icon: Brain,
-    title: 'AI Analyses Everything',
-    desc: 'Our AI studies form, fixtures and ownership.',
+    title: 'Upload to FPL AI',
+    desc: 'Drag and drop your screenshot into our analyser.',
     color: 'blue',
   },
   {
     icon: Rocket,
     title: 'Get Your Edge',
-    desc: 'Receive captain picks, transfer advice and hidden gems instantly.',
+    desc: 'Receive AI captain picks, transfer advice and hidden gems instantly.',
     color: 'amber',
   },
 ];
@@ -469,8 +469,14 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               <p className="text-slate-400 text-sm">Unlock the full AI advantage</p>
             </div>
             <div className="relative z-10 mb-6">
-              <span className="text-4xl font-extrabold">£15</span>
-              <span className="text-slate-400 text-sm">/month</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/15 border border-emerald-500/30 rounded-full mb-3">
+                <Gift className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300 text-sm font-bold">7 days free</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold">£15</span>
+                <span className="text-slate-400 text-sm">/month</span>
+              </div>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
               {proFeatures.map((f, i) => (
@@ -487,10 +493,10 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
               className="relative z-10 w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 text-center flex items-center justify-center gap-2"
             >
               <Gift className="w-5 h-5" />
-              Start 7-Day Free Trial
+              Try Pro Free for 7 Days — then £15/month
             </a>
             <p className="relative z-10 text-center text-xs text-slate-500 mt-3">
-              Then £15/month. Cancel anytime.
+              No charge for 7 days — cancel anytime
             </p>
           </div>
         </div>
@@ -549,7 +555,7 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
           <div className="grid md:grid-cols-3 gap-10 mb-10">
             {/* Left */}
             <div>
-              <Logo />
+              <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'landing' }))}><Logo /></button>
               <p className="text-slate-400 text-sm mt-4 mb-2">
                 AI-powered FPL advice every gameweek
               </p>
@@ -597,6 +603,14 @@ export default function LandingPage({ onEnterApp }: { onEnterApp: () => void }) 
                     className="text-slate-400 hover:text-emerald-400 text-sm transition-colors"
                   >
                     Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'blog' }))}
+                    className="text-slate-400 hover:text-emerald-400 text-sm transition-colors"
+                  >
+                    Blog
                   </button>
                 </li>
               </ul>

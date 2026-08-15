@@ -9,14 +9,14 @@ export default function TermsOfService({ onBack }: Props) {
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-lg border-b border-slate-800">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button onClick={onBack} className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
               <Trophy className="w-5 h-5 text-slate-950" />
             </div>
             <span className="text-white font-bold text-lg tracking-tight">
               FPL <span className="text-emerald-400">AI</span>
             </span>
-          </div>
+          </button>
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
