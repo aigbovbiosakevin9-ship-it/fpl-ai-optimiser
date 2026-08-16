@@ -26,7 +26,7 @@ Upgrade to FPL AI Pro (£15/month) to unlock:
 ✅ 3 gameweek fixture outlook
 ---
 
-Make the captain pick good enough to show the AI works but leave them wanting much more.`;
+Make the captain pick incredibly specific and impressive — use the player's exact stats, mention their specific fixture and give a very precise confidence percentage. Make it feel like genuinely expert advice so they are amazed but still desperate to see the full analysis.`;
 
 const PRO_SYSTEM_PROMPT = `You are FPL Oracle — the world's most advanced Fantasy Premier League AI analyst. You combine the analytical precision of a data scientist, the tactical knowledge of a Premier League coach, and the strategic thinking of a top 0.01% FPL manager globally.
 
@@ -103,14 +103,19 @@ STEP 8 — WEEKLY VERDICT
 
 ⚠️ FPL Oracle analyses data patterns and statistics. Football is unpredictable — use this as expert guidance alongside your own knowledge. Past performance does not guarantee future results.`;
 
-interface SquadPlayer {
-  name: string;
-  team: string;
-  position: string;
-  price: number;
-  form: number;
-  total_points: number;
-  points_per_game: number;
+interface RequestBody {
+  squad?: Array<{
+    name: string;
+    team: string;
+    position: string;
+    price: number;
+    form: number;
+    total_points: number;
+    points_per_game: number;
+  }>;
+  image?: string;
+  mediaType?: string;
+  isPro?: boolean;
 }
 
 Deno.serve(async (req: Request) => {
@@ -119,53 +124,85 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { squad, isPro } = (await req.json()) as { squad: SquadPlayer[]; isPro: boolean };
+    const body = (await req.json()) as RequestBody;
+    const { squad, image, mediaType, isPro } = body;
 
-    if (!squad || !Array.isArray(squad) || squad.length === 0) {
-      return new Response(JSON.stringify({ error: "No squad data provided" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!ANTHROPIC_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "AI analysis is temporarily unavailable. API key not configured." }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const systemPrompt = isPro ? PRO_SYSTEM_PROMPT : FREE_SYSTEM_PROMPT;
     const maxTokens = isPro ? 4000 : 500;
 
-    const squadText = squad
-      .map(
-        (p) =>
-          `${p.name} (${p.team}, ${p.position}, £${p.price}m, Form: ${p.form}, Total Points: ${p.total_points}, PPG: ${p.points_per_game})`,
-      )
-      .join("\n");
+    let messages;
+
+    if (image) {
+      // Image-based analysis (screenshot upload)
+      messages = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mediaType || "image/jpeg",
+                data: image,
+              },
+            },
+            {
+              type: "text",
+              text: "This is a screenshot of my Fantasy Premier League team. Please analyse it and provide your recommendations.",
+            },
+          ],
+        },
+      ];
+    } else if (squad && Array.isArray(squad) && squad.length > 0) {
+      // Text-based analysis (manual squad input)
+      const squadText = squad
+        .map(
+          (p) =>
+            `${p.name} (${p.team}, ${p.position}, £${p.price}m, Form: ${p.form}, Total Points: ${p.total_points}, PPG: ${p.points_per_game})`
+        )
+        .join("\n");
+
+      messages = [
+        {
+          role: "user",
+          content: `Here is my FPL squad for the next gameweek:\n\n${squadText}`,
+        },
+      ];
+    } else {
+      return new Response(
+        JSON.stringify({ error: "No squad data or image provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
+        "x-api-key": ANTHROPIC_API_KEY.trim(),
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "claude-opus-4-5",
         max_tokens: maxTokens,
         system: systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: `Here is my FPL squad for the next gameweek:\n\n${squadText}`,
-          },
-        ],
+        messages,
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
+      console.error("Anthropic API error:", response.status, errText);
       return new Response(
-        JSON.stringify({ error: `Anthropic API error (${response.status}): ${errText}` }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        JSON.stringify({ error: `AI analysis temporarily unavailable. Please try again.` }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -176,12 +213,10 @@ Deno.serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("Function error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
